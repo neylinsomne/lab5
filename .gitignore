@@ -1,0 +1,16 @@
+# SUMO data (too large for GitHub)
+resources/TAPASCologne-0.32.0/
+work/sumo_data/
+work/backups/
+
+# R files
+*.RData
+*.Rhistory
+
+# LaTeX aux files
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk

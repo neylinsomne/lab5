@@ -1,0 +1,55 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: lab05_sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Lab05Pass1"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+      - ./backups:/var/opt/backups
+
+  sumo:
+    image: ghcr.io/eclipse-sumo/sumo:v1_21_0
+    container_name: lab05_sumo
+    volumes:
+      - ../resources/TAPASCologne-0.32.0/TAPASCologne-0.32.0:/tapas
+      - ./sumo_data:/output
+    entrypoint: ["sumo"]
+    command:
+      - "-c"
+      - "/tapas/cologne.sumocfg"
+      - "--fcd-output"
+      - "/output/fcd_output.xml"
+      - "--begin"
+      - "0"
+      - "--end"
+      - "10000"
+      - "--fcd-output.geo"
+      - "--scale"
+      - "0.3"
+    working_dir: /tapas
+
+  ingester:
+    build:
+      context: .
+      dockerfile: Dockerfile.ingester
+    container_name: lab05_ingester
+    depends_on:
+      - sqlserver
+    volumes:
+      - ./scripts:/app/scripts
+      - ./sumo_data:/app/sumo_data
+    working_dir: /app
+    environment:
+      SQL_HOST: sqlserver
+      SQL_PORT: "1433"
+      SQL_USER: sa
+      SQL_PASS: "Lab05Pass1"
+      SQL_DB: sumo_traffic
+
+volumes:
+  sqldata:
